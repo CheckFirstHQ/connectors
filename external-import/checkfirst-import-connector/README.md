@@ -1,13 +1,14 @@
 # OpenCTI Connector: Checkfirst Import
 
-Ingest Checkfirst articles from the Checkfirst API into OpenCTI as STIX 2.1 bundles, tracking the Portal-Kombat / Pravda Network Russian influence operation.
+Ingest Checkfirst articles from the Checkfirst API into OpenCTI as STIX 2.1 bundles, tracking the Pravda Network (Portal-Kombat) Russian influence operation.
 
 This is an `EXTERNAL_IMPORT` connector that:
 
-- On first run, sends a one-off bundle of known Pravda network infrastructure (36 `pravda-XX.com` domains, 60+ `news-pravda.com` subdomains, shared hosting IP `178.21.15.85`) attributed to the Portal-Kombat intrusion set per SGDSN/VIGINUM reports (Feb + Apr 2024)
+- On first run, sends a one-off bundle of known Pravda network infrastructure (36 `pravda-XX.com` domains, 60+ `news-pravda.com` subdomains, shared hosting IP `178.21.15.85`) attributed to the Pravda Network intrusion set per SGDSN/VIGINUM reports (Feb + Apr 2024)
 - Fetches articles from a paginated REST API (`Api-Key` header auth)
 - Maps each article to STIX 2.1 objects and sends them in batches
 - Persists page-based progress in OpenCTI connector state so reruns resume where they left off
+- Records a `last_run` unix timestamp in state for operational visibility
 
 ## STIX object model
 
@@ -16,14 +17,14 @@ This is an `EXTERNAL_IMPORT` connector that:
 Sent once when `start_page == 1` (first ever run, or `CHECKFIRST_FORCE_REPROCESS=true`):
 
 ```
-IntrusionSet (Portal-Kombat)
-  ← attributed-to ← Campaign 2023
+IntrusionSet (Pravda Network)           [aliases: Portal-Kombat, Pravda Network IMS]
+  ← attributed-to ← Campaign 2023      [Pravda Network Campaigns 2023]
 
 Campaign 2023
   → uses → Infrastructure (pravda-XX.com)   [per domain, start_time = first_observed]
     → consists-of → DomainName (pravda-XX.com)
     → consists-of → IPv4Address (178.21.15.85, stop_time = 2024-12-31)
-  DomainName (news-pravda.com subdomain)
+  Subdomain (news-pravda.com subdomain)
     → related-to → Infrastructure (pravda-XX.com)
 ```
 
@@ -32,8 +33,8 @@ Campaign 2023
 For each article row fetched from the API:
 
 ```
-Campaign YYYY (per-year, first_seen = YYYY-01-01, special-cased 2023-09-01)
-  ← attributed-to ← IntrusionSet (Portal-Kombat)
+Campaign YYYY                           [Pravda Network Campaigns YYYY, first_seen = YYYY-01-01, special-cased 2023-09-01]
+  → attributed-to → IntrusionSet (Pravda Network)
   → uses → Infrastructure (article domain)
     → consists-of → DomainName (article domain)
   → uses → Channel/website (article domain)   [start_time = publication date]
@@ -47,6 +48,8 @@ Campaign YYYY (per-year, first_seen = YYYY-01-01, special-cased 2023-09-01)
     → related-to → URL (alternate URLs, if any)
   Channel/website (article domain)
     → related-to → DomainName (pravda-XX.com parent, if subdomain of news-pravda.com)
+  Channel/source (Telegram or website origin)
+    → related-to → Channel/max.ru (path after max.ru/, if source URL is on max.ru)
 ```
 
 All STIX IDs are deterministic — reruns produce no duplicates.
@@ -110,13 +113,13 @@ See `.env.sample` for a ready-to-use local template.
   - 36 `Infrastructure` objects wrapping those domains
   - 1 `IPv4-Addr` observable `178.21.15.85`
   - 60+ `Domain-Name` observables for `news-pravda.com` subdomains
-  - `Campaign` objects per year (`Portal-Kombat 2023`, `Portal-Kombat 2024`, …)
-  - `IntrusionSet` — Portal-Kombat
+  - `Campaign` objects per year (`Pravda Network Campaigns 2023`, `Pravda Network Campaigns 2024`, …)
+  - `IntrusionSet` — Pravda Network (aliases: Portal-Kombat, Pravda Network IMS)
 - Per article:
   - `Media-Content` with `publication_date`
   - `Channel` entities (type `Telegram` or `website`)
   - `Infrastructure` wrapping the publishing domain
-  - Relationships: `uses`, `consists-of`, `publishes`, `related-to`
+  - Relationships: `uses`, `consists-of`, `publishes`, `related-to`, `attributed-to`
 
 ## Notes
 
