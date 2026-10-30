@@ -16,3 +16,10 @@ checkfirst:
   since: P365D
   force_reprocess: false
   tlp_level: clear
+  # Parallel Row → STIX (1 = sequential in main process)
+  convert_workers: 1
+  convert_batch_size: 32
+  # Max unique objects per OpenCTI send (try 5000 / 2500 when benchmarking)
+  bundle_size: 10000
+  # Optional: also write JSON logs to a file (mount parent dir in Docker)
+  # log_file: /var/log/checkfirst-connector/connector.log

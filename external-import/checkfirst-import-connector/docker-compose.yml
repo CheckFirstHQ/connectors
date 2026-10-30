@@ -1,5 +1,6 @@
 services:
   connector-checkfirst-import-connector:
+    build: .
     image: opencti/connector-checkfirst-import-connector:latest
     environment:
       - OPENCTI_URL=http://localhost
@@ -14,3 +15,21 @@ services:
       - CHECKFIRST_API_ENDPOINT=${CHECKFIRST_API_ENDPOINT}
       - CHECKFIRST_SINCE=${CHECKFIRST_SINCE}
       - CHECKFIRST_TLP_LEVEL=${CHECKFIRST_TLP_LEVEL}
+      # Parallel Row → STIX conversion (1 = main process only)
+      - CHECKFIRST_CONVERT_WORKERS=${CHECKFIRST_CONVERT_WORKERS:-8}
+      # Convert batch size (was 64 in prior benches; try 32)
+      - CHECKFIRST_CONVERT_BATCH_SIZE=32
+      # OpenCTI send chunk size (unique objects). Try 5000 / 2500 vs 10000.
+      - CHECKFIRST_BUNDLE_SIZE=${CHECKFIRST_BUNDLE_SIZE:-10000}
+      # JSON logs on the host via the volume below (grep for [BENCH])
+      - CHECKFIRST_LOG_FILE=/var/log/checkfirst-connector/connector.log
+    volumes:
+      # Host path ./logs ← container log file for benchmarks across patch runs
+      - ./logs:/var/log/checkfirst-connector
+    networks:
+      - xtm
+
+networks:
+  xtm:
+    external: true
+    name: xtm_default

@@ -80,7 +80,7 @@
     },
     "CHECKFIRST_FORCE_REPROCESS": {
       "default": false,
-      "description": "If true, ignore any saved connector state and start from page 1. Useful for debugging or re-importing all data.",
+      "description": "If true, ignore any saved connector cursor and restart from the beginning of the filtered result set. Useful for debugging or re-importing all data.",
       "type": "boolean"
     },
     "CHECKFIRST_TLP_LEVEL": {
