@@ -6,7 +6,8 @@ connector:
   id: CHANGEME
   name: Checkfirst Import Connector
   scope: checkfirst
-  log_level: info
+  # error = errors only. info (or debug) also prints [BENCH] timings.
+  log_level: error
   duration_period: P7D
 
 checkfirst:

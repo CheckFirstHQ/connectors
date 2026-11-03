@@ -8,7 +8,8 @@ services:
       - CONNECTOR_ID=checkfirst-pravda
       - CONNECTOR_NAME=Checkfirst Import Connector
       - CONNECTOR_SCOPE=checkfirst
-      - CONNECTOR_LOG_LEVEL=info
+      # error = errors only. info also prints operational logs and [BENCH] timings.
+      - CONNECTOR_LOG_LEVEL=${CONNECTOR_LOG_LEVEL:-error}
       - CONNECTOR_DURATION_PERIOD=P7D
       - CHECKFIRST_API_URL=${CHECKFIRST_API_URL}
       - CHECKFIRST_API_KEY=${CHECKFIRST_API_KEY}

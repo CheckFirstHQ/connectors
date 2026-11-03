@@ -20,7 +20,10 @@ if __name__ == "__main__":
 
         # After helper/SDK logging setup (those may replace root handlers).
         if settings.checkfirst.log_file:
-            log_path = attach_file_logging(settings.checkfirst.log_file)
+            log_path = attach_file_logging(
+                settings.checkfirst.log_file,
+                settings.connector.log_level,
+            )
             helper.connector_logger.info(
                 "[CONNECTOR] File logging enabled",
                 {"log_file": str(log_path)},

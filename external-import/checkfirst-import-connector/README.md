@@ -102,7 +102,9 @@ See `.env.sample` for a ready-to-use local template.
    ```
 
 3. Host logs / benchmarks: `docker-compose.yml` mounts `./logs` to
-   `/var/log/checkfirst-connector` and sets `CHECKFIRST_LOG_FILE`. After a run:
+   `/var/log/checkfirst-connector` and sets `CHECKFIRST_LOG_FILE`.
+   `CONNECTOR_LOG_LEVEL=error` (the default) writes errors only.
+   Set `CONNECTOR_LOG_LEVEL=info` to also record `[BENCH]` timings, then:
    ```sh
    grep BENCH logs/connector.log
    ```
@@ -135,6 +137,6 @@ See `.env.sample` for a ready-to-use local template.
 - The `since` filter is resolved to an absolute UTC datetime at connector startup; duration strings like `P365D` are supported for convenience.
 - API requests use a 300-second timeout per page. The Checkfirst infrastructure can be slow to respond on large result pages.
 - `CHECKFIRST_CONVERT_WORKERS>1` parallelizes only Row → STIX conversion. Cursor advances only after a successful bundle send; a failed send stops the run without skipping ahead (no gaps).
-- Bundle prepare/send runs on a background thread so the next convert batch can overlap. Grep logs for `[BENCH]`: `overlapped_with_send`, `prepare_seconds`, `to_stix2_seconds`, `send_bundle_seconds`, `wait_seconds`.
+- Bundle prepare/send runs on a background thread so the next convert batch can overlap. With `CONNECTOR_LOG_LEVEL=info`, grep logs for `[BENCH]`: `overlapped_with_send`, `prepare_seconds`, `to_stix2_seconds`, `send_bundle_seconds`, `wait_seconds`. `error` omits those lines.
 - `CHECKFIRST_BUNDLE_SIZE` caps unique objects per OpenCTI send (default `10000`). Smaller → more work items, shorter per-send stalls; same deterministic STIX IDs / no data gaps if sends succeed.
 - Article `Infrastructure` omits `first_seen` so the same domain dedupes across articles (known domains keep `first_seen` from the first-run infrastructure bundle).
