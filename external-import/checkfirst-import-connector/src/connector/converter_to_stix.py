@@ -135,9 +135,10 @@ class ConverterToStix:
             )
 
         is_telegram = source_url is not None and source_url.startswith("https://t.me/")
+        is_max_ru = source_url is not None and source_url.startswith("https://max.ru/")
         channel = Channel(
             name=name,
-            channel_types=["channel"] if is_telegram else ["website"],
+            channel_types=["channel"] if (is_telegram or is_max_ru) else ["website"],
             author=self.author,
             markings=[self.tlp_marking],
             external_references=external_refs,
